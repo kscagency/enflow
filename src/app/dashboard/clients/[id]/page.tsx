@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { addDriveFolder, saveReportEmbed } from './actions'
@@ -26,17 +27,13 @@ const MOCK_CLIENT: Client = {
 }
 
 const MOCK_FOLDERS: DriveFolder[] = [
-  { id: '1', client_id: 'preview', drive_folder_id: 'f1', folder_name: 'Assets', folder_type: 'assets', created_at: new Date().toISOString() },
-  { id: '2', client_id: 'preview', drive_folder_id: 'f2', folder_name: 'Reports', folder_type: 'reports', created_at: new Date().toISOString() },
-  { id: '3', client_id: 'preview', drive_folder_id: 'f3', folder_name: 'Deliverables', folder_type: 'deliverables', created_at: new Date().toISOString() },
+  { id: 'f1', client_id: 'preview', folder_name: 'Assets', drive_folder_id: '1', folder_type: 'assets', created_at: '' },
+  { id: 'f2', client_id: 'preview', folder_name: 'Reports', drive_folder_id: '2', folder_type: 'reports', created_at: '' },
+  { id: 'f3', client_id: 'preview', folder_name: 'Deliverables', drive_folder_id: '3', folder_type: 'deliverables', created_at: '' },
 ]
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-}
-
 function getInitials(name: string) {
-  return name.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)
+  return name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
 }
 
 export default async function ClientDetailPage({ params }: PageProps) {
@@ -49,129 +46,87 @@ export default async function ClientDetailPage({ params }: PageProps) {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
     if (user) {
-      const { data: agencyUser } = await supabase
-        .from('agency_users')
-        .select('agency_id')
-        .eq('auth_user_id', user.id)
-        .single()
-
+      const { data: agencyUser } = await supabase.from('agency_users').select('agency_id').eq('auth_user_id', user.id).single()
       if (!agencyUser) notFound()
 
-      const { data: clientData } = await supabase
-        .from('clients')
-        .select('*')
-        .eq('id', id)
-        .eq('agency_id', agencyUser.agency_id)
-        .single()
-
+      const { data: clientData } = await supabase.from('clients').select('*').eq('id', id).eq('agency_id', agencyUser.agency_id).single()
       if (!clientData) notFound()
 
       client = clientData as Client
-
       const [{ data: foldersData }, { data: embedsData }] = await Promise.all([
         supabase.from('drive_folders').select('*').eq('client_id', id).order('created_at'),
         supabase.from('report_embeds').select('*').eq('client_id', id).order('updated_at', { ascending: false }),
       ])
-
       folders = (foldersData as DriveFolder[]) ?? []
       embeds = (embedsData as ReportEmbed[]) ?? []
     }
   } catch {
-    // No Supabase connection — render with mock data for UI preview
+    // No Supabase — use mock data
   }
 
-  const initials = getInitials(client.name)
-  const hasPortalAccess = client.invite_status === 'accepted'
+  const isAccepted = client.invite_status === 'accepted'
   const activeEmbed = embeds.find(e => e.embed_url)
-
-  // Silence unused variable warning
-  void addDriveFolder
-  void saveReportEmbed
 
   return (
     <>
       {/* Topbar */}
-      <div style={{
-        background: '#fff',
-        borderBottom: '0.5px solid #e0e3e0',
-        padding: '0 28px',
-        height: '52px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        flexShrink: 0,
-      }}>
+      <div style={{ background: '#fff', borderBottom: '0.5px solid #e0e3e0', padding: '0 28px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <a href="/dashboard" style={{ fontSize: '13px', color: '#aaa', textDecoration: 'none' }}
-            onMouseEnter={e => { e.currentTarget.style.color = '#0A7B7B' }}
-            onMouseLeave={e => { e.currentTarget.style.color = '#aaa' }}>
-            Clients
-          </a>
+          <Link href="/dashboard" style={{ fontSize: '13px', color: '#aaa', textDecoration: 'none' }}>Clients</Link>
           <span style={{ fontSize: '13px', color: '#ddd' }}>›</span>
           <span style={{ fontSize: '13px', fontWeight: 500, color: '#080C0C' }}>{client.name}</span>
         </div>
-        <div style={{
-          width: '32px', height: '32px', borderRadius: '8px',
-          background: '#F5F6F4', border: '0.5px solid #e0e3e0',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', position: 'relative',
-        }}>
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-            <path d="M8 1a5 5 0 00-5 5v2.5L2 10h12l-1-1.5V6a5 5 0 00-5-5z" stroke="#6b6b6a" strokeWidth="1.2"/>
-            <path d="M6.5 13a1.5 1.5 0 003 0" stroke="#6b6b6a" strokeWidth="1.2" strokeLinecap="round"/>
-          </svg>
-          <div style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: '#E24B4A', border: '1.5px solid #fff' }} />
+        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#F5F6F4', border: '0.5px solid #e0e3e0', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1a5 5 0 00-5 5v2.5L2 10h12l-1-1.5V6a5 5 0 00-5-5z" stroke="#6b6b6a" strokeWidth="1.2"/><path d="M6.5 13a1.5 1.5 0 003 0" stroke="#6b6b6a" strokeWidth="1.2" strokeLinecap="round"/></svg>
         </div>
       </div>
 
       {/* Content */}
-      <div style={{ padding: '24px 28px', flex: 1, overflowY: 'auto' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 28px', background: '#F5F6F4' }}>
         {/* Client header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '20px' }}>
           <div style={{
             width: '48px', height: '48px', borderRadius: '12px',
             background: 'rgba(10,123,123,0.12)', border: '0.5px solid rgba(10,123,123,0.2)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: '15px', fontWeight: 700, color: '#0A7B7B',
-            flexShrink: 0,
+            fontSize: '15px', fontWeight: 700, color: '#0A7B7B', flexShrink: 0,
           }}>
-            {initials}
+            {getInitials(client.name)}
           </div>
           <div>
             <h1 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '22px', fontWeight: 700, color: '#080C0C', letterSpacing: '-0.02em', margin: '0 0 3px' }}>
               {client.name}
             </h1>
             <p style={{ fontSize: '12px', color: '#aaa', margin: 0 }}>
-              {client.contact_email ? (
-                <a href={`mailto:${client.contact_email}`} style={{ color: '#0A7B7B', textDecoration: 'none' }}>
-                  {client.contact_email}
-                </a>
-              ) : null}
-              {client.contact_email ? ' · ' : ''}
-              Added {formatDate(client.created_at)}
+              {client.contact_email && (
+                <a href={`mailto:${client.contact_email}`} style={{ color: '#0A7B7B', textDecoration: 'none' }}>{client.contact_email}</a>
+              )}
+              {client.contact_email && client.created_at && <span>&nbsp;·&nbsp;</span>}
+              {client.created_at && `Added ${new Date(client.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`}
             </p>
           </div>
         </div>
 
         {/* Invite banner */}
-        {!hasPortalAccess && (
+        {!isAccepted && (
           <div style={{
             background: '#FAEEDA', border: '0.5px solid #FAC775', borderRadius: '10px',
             padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             marginBottom: '20px', gap: '16px',
           }}>
-            <p style={{ fontSize: '12px', color: '#633806', lineHeight: 1.5, margin: 0 }}>
+            <p style={{ fontSize: '12px', color: '#633806', margin: 0, lineHeight: 1.5 }}>
               <strong style={{ fontWeight: 500 }}>No portal access yet</strong> — send an invite when you&apos;re ready to give this client access.
             </p>
             <button style={{
-              fontFamily: "'Instrument Sans', sans-serif",
-              fontSize: '12px', fontWeight: 500, color: '#fff',
-              background: '#0A7B7B', border: 'none', borderRadius: '7px',
-              padding: '7px 14px', cursor: 'pointer', position: 'relative', overflow: 'hidden',
-              flexShrink: 0,
-            }}>
+              fontFamily: "'Instrument Sans', sans-serif", fontSize: '12px', fontWeight: 500,
+              color: '#fff', background: '#0A7B7B', border: 'none', borderRadius: '7px',
+              padding: '7px 14px', cursor: 'pointer', flexShrink: 0,
+              position: 'relative', overflow: 'hidden', transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#0c9090')}
+            onMouseLeave={e => (e.currentTarget.style.background = '#0A7B7B')}
+            >
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '0.5px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.4) 50%, transparent)' }} />
               <span style={{ position: 'relative' }}>Send invite</span>
             </button>
@@ -180,107 +135,92 @@ export default async function ClientDetailPage({ params }: PageProps) {
 
         {/* 4-card grid */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
-          {/* Client Brief */}
-          <div style={{ background: '#fff', border: '0.5px solid #e0e3e0', borderRadius: '12px', padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#aaa' }}>Client brief</span>
-              <button style={{ fontSize: '11px', fontWeight: 500, color: '#0A7B7B', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>Edit</button>
-            </div>
-            <DetailRow label="Services" value={client.services ?? '—'} />
-            <DetailRow label="Retainer" value={client.retainer_value ? `$${client.retainer_value.toLocaleString()} / month` : '—'} />
-            <DetailRow label="Goals" value={client.campaign_goals ?? '—'} />
-            <DetailRow label="Notes" value={client.internal_notes ?? '—'} muted />
-          </div>
+          {/* Client brief */}
+          <DetailCard title="Client brief">
+            <DetailRow label="Services" value={client.services ?? 'Not set'} />
+            <DetailRow label="Retainer" value={client.retainer_value ? `$${client.retainer_value.toLocaleString()} / month` : 'Not set'} />
+            <DetailRow label="Goals" value={client.campaign_goals ?? 'Not set'} />
+            <DetailRow label="Notes" value={client.internal_notes ?? ''} muted />
+          </DetailCard>
 
-          {/* Contact Info */}
-          <div style={{ background: '#fff', border: '0.5px solid #e0e3e0', borderRadius: '12px', padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#aaa' }}>Contact info</span>
-              <button style={{ fontSize: '11px', fontWeight: 500, color: '#0A7B7B', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>Edit</button>
-            </div>
-            <DetailRow label="Name" value={client.contact_name ?? '—'} />
-            <DetailRow label="Phone" value={client.phone ?? '—'} />
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
-              <span style={{ fontSize: '11px', color: '#aaa', minWidth: '80px', flexShrink: 0, marginTop: '1px' }}>Email</span>
-              {client.contact_email ? (
-                <a href={`mailto:${client.contact_email}`} style={{ fontSize: '13px', color: '#0A7B7B', textDecoration: 'none', lineHeight: 1.5 }}>
-                  {client.contact_email}
-                </a>
-              ) : (
-                <span style={{ fontSize: '13px', color: '#080C0C', lineHeight: 1.5 }}>—</span>
-              )}
-            </div>
+          {/* Contact info */}
+          <DetailCard title="Contact info">
+            <DetailRow label="Name" value={client.contact_name ?? 'Not set'} />
+            <DetailRow label="Phone" value={client.phone ?? 'Not set'} />
+            <DetailRow label="Email" value={client.contact_email ?? 'Not set'} teal />
             <DetailRow label="Role" value="Founder & CEO" />
-          </div>
+          </DetailCard>
 
-          {/* Drive Folders */}
-          <div style={{ background: '#fff', border: '0.5px solid #e0e3e0', borderRadius: '12px', padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#aaa' }}>Drive folders</span>
-              <button style={{ fontSize: '11px', fontWeight: 500, color: '#0A7B7B', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>Edit</button>
-            </div>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {folders.length > 0 ? folders.map(f => (
-                <div key={f.id} style={{
-                  display: 'flex', alignItems: 'center', gap: '6px',
-                  background: '#F5F6F4', border: '0.5px solid #e0e3e0', borderRadius: '7px',
-                  padding: '6px 10px', fontSize: '12px', color: '#444',
-                  cursor: 'pointer',
-                }}>
-                  <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A7B7B', flexShrink: 0 }} />
-                  {f.folder_name}
+          {/* Drive folders */}
+          <DetailCard title="Drive folders">
+            {folders.length === 0 ? (
+              <p style={{ fontSize: '12px', color: '#aaa', margin: 0 }}>No folders linked yet.</p>
+            ) : (
+              <>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {folders.map(folder => (
+                    <div key={folder.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '6px',
+                      background: '#F5F6F4', border: '0.5px solid #e0e3e0',
+                      borderRadius: '7px', padding: '6px 10px',
+                      fontSize: '12px', color: '#444', cursor: 'pointer',
+                    }}>
+                      <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#0A7B7B', flexShrink: 0 }} />
+                      {folder.folder_name}
+                    </div>
+                  ))}
                 </div>
-              )) : (
-                <p style={{ fontSize: '13px', color: '#aaa', margin: 0 }}>No folders linked</p>
-              )}
-            </div>
-            {folders.length > 0 && (
-              <p style={{ fontSize: '11px', color: '#bbb', marginTop: '12px', marginBottom: 0 }}>
-                {folders.length} folders linked · Last synced today
-              </p>
+                <p style={{ fontSize: '11px', color: '#bbb', margin: '12px 0 0' }}>
+                  {folders.length} folder{folders.length !== 1 ? 's' : ''} linked · Last synced today
+                </p>
+              </>
             )}
-          </div>
+          </DetailCard>
 
-          {/* Campaign Report */}
-          <div style={{ background: '#fff', border: '0.5px solid #e0e3e0', borderRadius: '12px', padding: '18px 20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-              <span style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#aaa' }}>Campaign report</span>
-              <button style={{ fontSize: '11px', fontWeight: 500, color: '#0A7B7B', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>Edit</button>
-            </div>
+          {/* Campaign report */}
+          <DetailCard title="Campaign report">
             {activeEmbed ? (
-              <div style={{ fontSize: '12px', color: '#0A7B7B' }}>
-                Report linked: {activeEmbed.label ?? 'Campaign Report'}
+              <div style={{ background: '#F5F6F4', borderRadius: '8px', padding: '12px', fontSize: '12px', color: '#0A7B7B' }}>
+                Report embedded ✓
               </div>
             ) : (
-              <div style={{
-                background: '#F5F6F4', border: '0.5px dashed #cdd0ce', borderRadius: '8px',
-                padding: '20px', textAlign: 'center',
-              }}>
+              <div style={{ background: '#F5F6F4', border: '0.5px dashed #cdd0ce', borderRadius: '8px', padding: '20px', textAlign: 'center' }}>
                 <p style={{ fontSize: '12px', color: '#aaa', margin: '0 0 10px', lineHeight: 1.6 }}>
                   Paste an AgencyAnalytics or Looker Studio embed URL to display the report in the client portal.
                 </p>
                 <button style={{
-                  fontFamily: "'Instrument Sans', sans-serif",
-                  fontSize: '12px', fontWeight: 500, color: '#0A7B7B',
-                  background: '#fff', border: '0.5px solid rgba(10,123,123,0.3)',
-                  borderRadius: '7px', padding: '7px 14px', cursor: 'pointer',
+                  fontFamily: "'Instrument Sans', sans-serif", fontSize: '12px', fontWeight: 500,
+                  color: '#0A7B7B', background: '#fff', border: '0.5px solid rgba(10,123,123,0.3)',
+                  borderRadius: '7px', padding: '7px 14px', cursor: 'pointer', transition: 'background 0.15s',
                 }}>
                   Paste embed URL
                 </button>
               </div>
             )}
-          </div>
+          </DetailCard>
         </div>
       </div>
     </>
   )
 }
 
-function DetailRow({ label, value, muted }: { label: string; value: string; muted?: boolean }) {
+function DetailCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div style={{ background: '#fff', border: '0.5px solid #e0e3e0', borderRadius: '12px', padding: '18px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+        <span style={{ fontSize: '12px', fontWeight: 500, letterSpacing: '0.07em', textTransform: 'uppercase', color: '#aaa' }}>{title}</span>
+        <button style={{ fontSize: '11px', fontWeight: 500, color: '#0A7B7B', cursor: 'pointer', background: 'none', border: 'none', padding: 0 }}>Edit</button>
+      </div>
+      {children}
+    </div>
+  )
+}
+
+function DetailRow({ label, value, muted, teal }: { label: string; value: string; muted?: boolean; teal?: boolean }) {
   return (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '10px' }}>
       <span style={{ fontSize: '11px', color: '#aaa', minWidth: '80px', flexShrink: 0, marginTop: '1px' }}>{label}</span>
-      <span style={{ fontSize: '13px', color: muted ? '#888' : '#080C0C', lineHeight: 1.5, fontStyle: muted ? 'italic' : 'normal' }}>
+      <span style={{ fontSize: '13px', color: teal ? '#0A7B7B' : muted ? '#888' : '#080C0C', fontStyle: muted ? 'italic' : 'normal', lineHeight: 1.5 }}>
         {value}
       </span>
     </div>

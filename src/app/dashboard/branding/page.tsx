@@ -24,44 +24,22 @@ export default async function BrandingPage() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
     if (user) {
-      const { data: agencyUser } = await supabase
-        .from('agency_users')
-        .select('agency_id')
-        .eq('auth_user_id', user.id)
-        .single()
-
+      const { data: agencyUser } = await supabase.from('agency_users').select('agency_id').eq('auth_user_id', user.id).single()
       if (agencyUser) {
-        const { data: agencyData } = await supabase
-          .from('agencies')
-          .select('*')
-          .eq('id', agencyUser.agency_id)
-          .single()
-
+        const { data: agencyData } = await supabase.from('agencies').select('*').eq('id', agencyUser.agency_id).single()
         if (agencyData) {
           agency = agencyData as Agency
           if (agency.plan_tier_id) {
-            const { data } = await supabase
-              .from('plan_tiers')
-              .select('*')
-              .eq('id', agency.plan_tier_id)
-              .single()
+            const { data } = await supabase.from('plan_tiers').select('*').eq('id', agency.plan_tier_id).single()
             plan = (data as PlanTier) ?? null
           }
         }
       }
     }
   } catch {
-    // No Supabase connection — render with mock data for UI preview
+    // No Supabase — use mock data
   }
 
-  return (
-    <BrandingForm
-      agency={agency}
-      plan={plan}
-      onSave={saveBranding}
-      onLogoUpload={uploadLogo}
-    />
-  )
+  return <BrandingForm agency={agency} plan={plan} onSave={saveBranding} onLogoUpload={uploadLogo} />
 }

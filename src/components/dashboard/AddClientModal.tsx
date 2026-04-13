@@ -11,6 +11,7 @@ interface AddClientModalProps {
 export function AddClientModal({ isOpen, onClose }: AddClientModalProps) {
   const formRef = useRef<HTMLFormElement>(null)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
   const [isPending, startTransition] = useTransition()
 
   if (!isOpen) return null
@@ -24,171 +25,92 @@ export function AddClientModal({ isOpen, onClose }: AddClientModalProps) {
       if (result?.error) {
         setError(result.error)
       } else {
+        setSuccess(true)
         formRef.current?.reset()
-        onClose()
+        setTimeout(() => { setSuccess(false); onClose() }, 1200)
       }
     })
   }
 
   return (
     <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 50,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1rem',
-        background: 'rgba(8,12,12,0.65)',
-      }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', background: 'rgba(6,9,9,0.55)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div style={{
-        background: '#fff',
-        border: '0.5px solid #dde0de',
-        borderRadius: '14px',
-        width: '100%',
-        maxWidth: '420px',
-        position: 'relative',
-        zIndex: 2,
-        boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
-        fontFamily: "'Instrument Sans', sans-serif",
+        background: '#fff', borderRadius: '14px', width: '100%', maxWidth: '420px',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.18)', overflow: 'hidden',
       }}>
         {/* Header */}
-        <div style={{ padding: '24px 28px 0', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px', borderBottom: '0.5px solid #e8ecea' }}>
           <div>
-            <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '20px', fontWeight: 700, color: '#080C0C', letterSpacing: '-0.02em', margin: '0 0 4px' }}>
-              Add new client
+            <h2 style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '17px', fontWeight: 700, color: '#080C0C', margin: 0, letterSpacing: '-0.01em' }}>
+              Add client
             </h2>
-            <p style={{ fontSize: '13px', color: '#6b6b6a', margin: 0, lineHeight: 1.5 }}>
-              You can add full details after creating the client.
-            </p>
+            <p style={{ fontSize: '12px', color: '#aaa', margin: '3px 0 0' }}>They'll receive a portal invite when you're ready.</p>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              width: '28px', height: '28px',
-              borderRadius: '7px',
-              background: '#F5F6F4',
-              border: '0.5px solid #e0e3e0',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer',
-              flexShrink: 0,
-              marginTop: '2px',
-            }}
-          >
-            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-              <path d="M1 1l8 8M9 1L1 9" stroke="#888" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa', padding: '4px', display: 'flex', alignItems: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M14 4L4 14M4 4l10 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
         </div>
 
-        {/* Divider */}
-        <div style={{ height: '0.5px', background: '#f0f0ee', margin: '20px 0' }} />
-
-        {/* Body */}
-        <form ref={formRef} onSubmit={handleSubmit} style={{ padding: '0 28px' }}>
+        {/* Form */}
+        <form ref={formRef} onSubmit={handleSubmit} style={{ padding: '20px 24px 24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          {success && (
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(10,123,123,0.08)', color: '#0A7B7B', fontSize: '13px', border: '0.5px solid rgba(10,123,123,0.2)' }}>
+              Client added!
+            </div>
+          )}
           {error && (
-            <p style={{ fontSize: '12px', color: '#E24B4A', background: 'rgba(226,75,74,0.08)', border: '0.5px solid rgba(226,75,74,0.2)', borderRadius: '8px', padding: '8px 12px', marginBottom: '12px' }}>
+            <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'rgba(226,75,74,0.06)', color: '#E24B4A', fontSize: '13px', border: '0.5px solid rgba(226,75,74,0.2)' }}>
               {error}
-            </p>
+            </div>
           )}
 
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 500, color: '#444', marginBottom: '6px', display: 'block' }}>
-              Business name <span style={{ color: '#0A7B7B', marginLeft: '2px' }}>*</span>
-            </label>
-            <input
-              name="name"
-              type="text"
-              required
-              placeholder="e.g. Acme Creative"
-              style={{
-                fontFamily: "'Instrument Sans', sans-serif",
-                fontSize: '13px', color: '#080C0C',
-                background: '#F5F6F4',
-                border: '0.5px solid #cdd0ce',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                width: '100%',
-                outline: 'none',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.15s, box-shadow 0.15s',
-              }}
-              onFocus={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.border = '1.5px solid #0A7B7B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,123,123,0.1)' }}
-              onBlur={e => { e.currentTarget.style.background = '#F5F6F4'; e.currentTarget.style.border = '0.5px solid #cdd0ce'; e.currentTarget.style.boxShadow = 'none' }}
-            />
-          </div>
+          <Field label="Business name" name="name" required placeholder="Acme Creative" />
+          <Field label="Website URL" name="internal_notes" placeholder="acmecreative.com" />
 
-          <div style={{ marginBottom: '8px' }}>
-            <label style={{ fontSize: '12px', fontWeight: 500, color: '#444', marginBottom: '6px', display: 'block' }}>
-              Website URL
-            </label>
-            <input
-              name="website_url"
-              type="text"
-              placeholder="e.g. acmecreative.com"
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', paddingTop: '4px' }}>
+            <button type="button" onClick={onClose} style={{ background: 'none', border: '0.5px solid #e0e3e0', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', color: '#555', cursor: 'pointer', fontFamily: "'Instrument Sans', sans-serif" }}>
+              Cancel
+            </button>
+            <button
+              type="submit" disabled={isPending}
               style={{
-                fontFamily: "'Instrument Sans', sans-serif",
-                fontSize: '13px', color: '#080C0C',
-                background: '#F5F6F4',
-                border: '0.5px solid #cdd0ce',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                width: '100%',
-                outline: 'none',
-                boxSizing: 'border-box',
-                transition: 'border-color 0.15s, box-shadow 0.15s',
+                background: isPending ? 'rgba(10,123,123,0.6)' : '#0A7B7B', color: '#fff',
+                border: 'none', borderRadius: '8px', padding: '8px 18px',
+                fontSize: '13px', fontWeight: 500, cursor: isPending ? 'not-allowed' : 'pointer',
+                fontFamily: "'Instrument Sans', sans-serif", position: 'relative', overflow: 'hidden',
               }}
-              onFocus={e => { e.currentTarget.style.background = '#fff'; e.currentTarget.style.border = '1.5px solid #0A7B7B'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(10,123,123,0.1)' }}
-              onBlur={e => { e.currentTarget.style.background = '#F5F6F4'; e.currentTarget.style.border = '0.5px solid #cdd0ce'; e.currentTarget.style.boxShadow = 'none' }}
-            />
+            >
+              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '0.5px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3) 50%, transparent)' }} />
+              <span style={{ position: 'relative' }}>{isPending ? 'Adding…' : 'Add client'}</span>
+            </button>
           </div>
         </form>
-
-        {/* Footer */}
-        <div style={{ padding: '8px 28px 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
-          <button
-            type="button"
-            onClick={onClose}
-            style={{
-              fontFamily: "'Instrument Sans', sans-serif",
-              fontSize: '13px', fontWeight: 500, color: '#6b6b6a',
-              background: '#F5F6F4',
-              border: '0.5px solid #dde0de',
-              borderRadius: '8px',
-              padding: '10px 18px',
-              cursor: 'pointer',
-              transition: 'background 0.15s',
-            }}
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            form=""
-            disabled={isPending}
-            onClick={() => { formRef.current?.requestSubmit() }}
-            style={{
-              fontFamily: "'Instrument Sans', sans-serif",
-              fontSize: '13px', fontWeight: 500, color: '#fff',
-              background: isPending ? 'rgba(10,123,123,0.6)' : '#0A7B7B',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '10px 20px',
-              cursor: isPending ? 'not-allowed' : 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              transition: 'background 0.15s',
-            }}
-          >
-            <div style={{ position: 'absolute', width: '120px', height: '50px', background: 'radial-gradient(ellipse at center, rgba(18,191,191,0.4) 0%, transparent 70%)', top: '-25px', left: '50%', transform: 'translateX(-50%)', pointerEvents: 'none' }} />
-            <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '0.5px', background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0.55) 50%, rgba(255,255,255,0.3) 60%, transparent)' }} />
-            <span style={{ position: 'relative' }}>{isPending ? 'Creating…' : 'Create client'}</span>
-          </button>
-        </div>
       </div>
+    </div>
+  )
+}
+
+function Field({ label, name, required, placeholder, type = 'text' }: { label: string; name: string; required?: boolean; placeholder?: string; type?: string }) {
+  return (
+    <div>
+      <label style={{ display: 'block', fontSize: '12px', fontWeight: 500, color: '#555', marginBottom: '6px' }}>
+        {label}
+      </label>
+      <input
+        name={name} type={type} required={required} placeholder={placeholder}
+        style={{
+          width: '100%', padding: '9px 12px',
+          border: '0.5px solid #e0e3e0', borderRadius: '8px',
+          fontSize: '13px', color: '#080C0C', background: '#fff',
+          outline: 'none', boxSizing: 'border-box',
+          fontFamily: "'Instrument Sans', sans-serif", transition: 'border-color 0.15s',
+        }}
+        onFocus={e => (e.currentTarget.style.borderColor = 'rgba(10,123,123,0.5)')}
+        onBlur={e => (e.currentTarget.style.borderColor = '#e0e3e0')}
+      />
     </div>
   )
 }
