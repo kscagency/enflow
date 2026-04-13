@@ -1,0 +1,480 @@
+{
+  "project": "enflow",
+  "repoPath": "~/enflow",
+  "branchBase": "main",
+  "branchName": "feat/mvp-foundation",
+  "description": "Enflow MVP — White-label agency client portal with Supabase auth, Drive integration, and report embeds",
+  "qualityChecks": {
+    "build": "npm run build",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "maxRetries": 3,
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Tailwind design system + CSS variables setup",
+      "acceptanceCriteria": [
+        "Build passes",
+        "Google Fonts (Bricolage Grotesque 700, Instrument Sans 400/500) load",
+        "CSS variables for brand theming exist in globals.css (--brand-primary, --brand-accent, etc.)",
+        "Tailwind configured with Enflow brand tokens (colors, fonts, spacing)"
+      ],
+      "priority": 1,
+      "passes": false,
+      "scope": {
+        "write": ["src/app/globals.css", "tailwind.config.ts"],
+        "read": ["CODER-CONTEXT.md"],
+        "doNotTouch": []
+      },
+      "dependsOn": [],
+      "estimatedComplexity": "low",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Supabase client + env setup",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/lib/supabase/client.ts exports a createClient function (browser client)",
+        "src/lib/supabase/server.ts exports a createClient function (server client)",
+        ".env.local.example contains NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY",
+        "@supabase/supabase-js and @supabase/ssr are installed in package.json"
+      ],
+      "priority": 2,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/lib/supabase/client.ts",
+          "src/lib/supabase/server.ts",
+          ".env.local.example",
+          "package.json"
+        ],
+        "read": [],
+        "doNotTouch": []
+      },
+      "dependsOn": [],
+      "estimatedComplexity": "low",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Database schema SQL migration",
+      "acceptanceCriteria": [
+        "supabase/migrations/001_initial_schema.sql exists",
+        "SQL file contains CREATE TABLE for all 7 tables: plan_tiers, agencies, agency_users, clients, drive_folders, report_embeds, notifications",
+        "SQL file contains RLS policies: agency users see only their agency's data, clients see only their data",
+        "SQL file contains seed INSERT statements for 3 plan tiers (Starter, Growth, Pro)"
+      ],
+      "priority": 3,
+      "passes": false,
+      "scope": {
+        "write": ["supabase/migrations/001_initial_schema.sql"],
+        "read": ["CODER-CONTEXT.md"],
+        "doNotTouch": []
+      },
+      "dependsOn": [],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-004",
+      "title": "TypeScript types for database schema",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/types/database.ts exports interfaces for PlanTier, Agency, AgencyUser, Client, DriveFolder, ReportEmbed, Notification",
+        "src/types/index.ts barrel export exists and re-exports all types"
+      ],
+      "priority": 4,
+      "passes": false,
+      "scope": {
+        "write": ["src/types/database.ts", "src/types/index.ts"],
+        "read": ["supabase/migrations/001_initial_schema.sql", "CODER-CONTEXT.md"],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-003"],
+      "estimatedComplexity": "low",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Auth middleware + route protection",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/middleware.ts exists with Supabase auth session refresh logic",
+        "Matcher config covers /dashboard/* and /portal/* routes",
+        "Unauthenticated users are redirected to /login"
+      ],
+      "priority": 5,
+      "passes": false,
+      "scope": {
+        "write": ["src/middleware.ts"],
+        "read": ["src/lib/supabase/server.ts"],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-002"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Login page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/login/page.tsx renders with email + password form",
+        "Form submits to Supabase auth signInWithPassword",
+        "Dark background (#060909), teal accents, and Enflow branding applied",
+        "Error states and loading states are handled"
+      ],
+      "priority": 6,
+      "passes": false,
+      "scope": {
+        "write": ["src/app/login/page.tsx", "src/app/login/actions.ts"],
+        "read": [
+          "src/lib/supabase/server.ts",
+          "src/app/globals.css",
+          "CODER-CONTEXT.md"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-001", "US-002"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-007",
+      "title": "Agency dashboard layout (sidebar + header)",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/dashboard/layout.tsx renders with sidebar navigation and header",
+        "Sidebar contains links for Clients, Branding, Settings",
+        "Header shows agency name, user avatar/menu, and logout",
+        "Dark sidebar (#1A3A3A) and off-white content area (#EDEEED) colors applied",
+        "Layout is responsive and sidebar collapses at 375px"
+      ],
+      "priority": 7,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/dashboard/layout.tsx",
+          "src/components/dashboard/Sidebar.tsx",
+          "src/components/dashboard/Header.tsx"
+        ],
+        "read": ["src/app/globals.css", "CODER-CONTEXT.md"],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-001"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-008",
+      "title": "Client portal layout",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/portal/layout.tsx renders with clean minimal layout",
+        "Top nav contains links for Files, Reports, Notifications, Settings",
+        "Agency branding injected via CSS variables",
+        "Layout is mobile responsive"
+      ],
+      "priority": 8,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/portal/layout.tsx",
+          "src/components/portal/PortalNav.tsx",
+          "src/components/portal/PortalHeader.tsx"
+        ],
+        "read": ["src/app/globals.css", "CODER-CONTEXT.md"],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-001"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Agency dashboard — client list page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/dashboard/page.tsx fetches clients from Supabase scoped by agency_id",
+        "Client list renders with name, contact, invite status, and services tags",
+        "Empty state component is shown when no clients exist"
+      ],
+      "priority": 9,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/dashboard/page.tsx",
+          "src/components/dashboard/ClientList.tsx",
+          "src/components/dashboard/ClientCard.tsx",
+          "src/components/ui/EmptyState.tsx"
+        ],
+        "read": [],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-007"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-010",
+      "title": "Add client modal + Supabase invite",
+      "acceptanceCriteria": [
+        "Build passes",
+        "Add client modal renders with all fields: name, contact_name, contact_email, phone, services, retainer_value, contract_start_date, campaign_goals, internal_notes",
+        "Form validates required fields before submission",
+        "On submit, creates client record in Supabase and triggers invite email"
+      ],
+      "priority": 10,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/components/dashboard/AddClientModal.tsx",
+          "src/app/dashboard/actions.ts"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-009"],
+      "estimatedComplexity": "high",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-011",
+      "title": "Client detail page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/dashboard/clients/[id]/page.tsx renders client data",
+        "Page shows all client brief fields",
+        "Page includes sections for Drive folders and report embeds",
+        "Tabs or sections for Brief, Files, and Report are present"
+      ],
+      "priority": 11,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/dashboard/clients/[id]/page.tsx",
+          "src/components/dashboard/ClientBrief.tsx",
+          "src/components/dashboard/ClientDriveFolders.tsx",
+          "src/components/dashboard/ClientReportEmbed.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-009"],
+      "estimatedComplexity": "high",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-012",
+      "title": "Branding settings page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/dashboard/branding/page.tsx renders branding form",
+        "Logo upload, primary color, and accent color fields are available",
+        "Accent color field is locked on Starter tier with upgrade badge",
+        "Full brand kit is locked on Starter and Growth tiers with upgrade badge",
+        "Upgrade badge component renders correctly for locked features"
+      ],
+      "priority": 12,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/dashboard/branding/page.tsx",
+          "src/components/dashboard/BrandingForm.tsx",
+          "src/components/ui/UpgradeBadge.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts",
+          "CODER-CONTEXT.md"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-007"],
+      "estimatedComplexity": "high",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-013",
+      "title": "Client portal overview page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/portal/page.tsx renders activity feed with recent notifications",
+        "Quick links to files and reports are present"
+      ],
+      "priority": 13,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/portal/page.tsx",
+          "src/components/portal/ActivityFeed.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-008"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-014",
+      "title": "Client portal file browser",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/portal/files/page.tsx renders file browser UI",
+        "Folders (Assets, Reports, Deliverables) are displayed from drive_folders table",
+        "Clean native file browser UI is implemented"
+      ],
+      "priority": 14,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/portal/files/page.tsx",
+          "src/components/portal/FileBrowser.tsx",
+          "src/components/portal/FolderCard.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-008"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-015",
+      "title": "Client portal report viewer",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/portal/reports/page.tsx renders full-screen branded iframe embed from report_embeds table",
+        "Loading state is shown while iframe loads",
+        "Empty state is shown if no report is configured"
+      ],
+      "priority": 15,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/portal/reports/page.tsx",
+          "src/components/portal/ReportViewer.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-008"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-016",
+      "title": "Client portal notifications page",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/portal/notifications/page.tsx renders notification list scoped to the client",
+        "Mark as read functionality works and updates the notification record"
+      ],
+      "priority": 16,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/portal/notifications/page.tsx",
+          "src/components/portal/NotificationList.tsx",
+          "src/app/portal/notifications/actions.ts"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-004", "US-008"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-017",
+      "title": "White-label subdomain routing + CSS variable injection",
+      "acceptanceCriteria": [
+        "Build passes",
+        "Middleware detects subdomain from incoming request",
+        "Agency record is queried from agencies table by matching subdomain",
+        "Brand fields are injected as CSS variables into the layout",
+        "Plan tier gating correctly limits which brand fields are injected"
+      ],
+      "priority": 17,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/middleware.ts",
+          "src/lib/branding.ts",
+          "src/app/layout.tsx"
+        ],
+        "read": [
+          "src/types/database.ts",
+          "src/lib/supabase/server.ts",
+          "CODER-CONTEXT.md"
+        ],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-005", "US-004"],
+      "estimatedComplexity": "high",
+      "retryCount": 0,
+      "scratchpad": ""
+    },
+    {
+      "id": "US-018",
+      "title": "Account settings page (both user types)",
+      "acceptanceCriteria": [
+        "Build passes",
+        "src/app/dashboard/settings/page.tsx renders for agency users",
+        "src/app/portal/settings/page.tsx renders for client users",
+        "Password change form submits via Supabase auth updateUser"
+      ],
+      "priority": 18,
+      "passes": false,
+      "scope": {
+        "write": [
+          "src/app/dashboard/settings/page.tsx",
+          "src/app/portal/settings/page.tsx",
+          "src/components/shared/PasswordChangeForm.tsx"
+        ],
+        "read": ["src/lib/supabase/server.ts"],
+        "doNotTouch": []
+      },
+      "dependsOn": ["US-005"],
+      "estimatedComplexity": "medium",
+      "retryCount": 0,
+      "scratchpad": ""
+    }
+  ]
+}
