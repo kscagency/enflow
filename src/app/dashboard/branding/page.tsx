@@ -6,8 +6,8 @@ import type { Agency, PlanTier } from '@/types/database'
 const MOCK_AGENCY: Agency = {
   id: 'preview-agency',
   plan_tier_id: null,
-  name: 'Preview Agency',
-  subdomain: 'preview',
+  name: 'Acme Agency',
+  subdomain: 'acme',
   logo_url: null,
   brand_primary_color: '#0A7B7B',
   brand_accent_color: '#12BFBF',
@@ -23,8 +23,8 @@ export default async function BrandingPage() {
 
   try {
     const supabase = await createClient()
-
     const { data: { user } } = await supabase.auth.getUser()
+
     if (user) {
       const { data: agencyUser } = await supabase
         .from('agency_users')
@@ -41,7 +41,6 @@ export default async function BrandingPage() {
 
         if (agencyData) {
           agency = agencyData as Agency
-
           if (agency.plan_tier_id) {
             const { data } = await supabase
               .from('plan_tiers')
@@ -58,30 +57,11 @@ export default async function BrandingPage() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h1
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1.375rem',
-            fontWeight: 700,
-            color: 'var(--brand-dark)',
-            margin: 0,
-          }}
-        >
-          Branding
-        </h1>
-        <p style={{ margin: '0.35rem 0 0', fontSize: '0.875rem', color: 'rgba(26,58,58,0.5)' }}>
-          Customize how your client portal looks. Changes apply immediately.
-        </p>
-      </div>
-
-      <BrandingForm
-        agency={agency}
-        plan={plan}
-        onSave={saveBranding}
-        onLogoUpload={uploadLogo}
-      />
-    </div>
+    <BrandingForm
+      agency={agency}
+      plan={plan}
+      onSave={saveBranding}
+      onLogoUpload={uploadLogo}
+    />
   )
 }

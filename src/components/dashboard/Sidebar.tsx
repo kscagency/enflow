@@ -3,125 +3,221 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+const EnflowLogo = () => (
+  <svg width="22" height="22" viewBox="0 0 48 48" fill="none">
+    <circle cx="24" cy="24" r="22" fill="#12BFBF" opacity="0.12"/>
+    <circle cx="24" cy="24" r="22" stroke="#12BFBF" strokeWidth="1.5" fill="none"/>
+    <circle cx="24" cy="13" r="3.8" fill="#12BFBF"/>
+    <circle cx="34" cy="19" r="2.8" fill="#12BFBF" opacity="0.7"/>
+    <circle cx="36" cy="30" r="3.2" fill="#12BFBF" opacity="0.5"/>
+    <circle cx="24" cy="35" r="2.8" fill="#12BFBF" opacity="0.65"/>
+    <circle cx="13" cy="30" r="3.2" fill="#12BFBF" opacity="0.35"/>
+    <circle cx="12" cy="19" r="2.8" fill="#12BFBF" opacity="0.2"/>
+    <circle cx="24" cy="24" r="3.5" fill="#12BFBF" opacity="0.9"/>
+  </svg>
+)
+
 const navItems = [
   {
-    href: '/dashboard/clients',
+    href: '/dashboard',
     label: 'Clients',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    icon: (active: boolean) => (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="1" width="6" height="6" rx="1.5" fill={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'}/>
+        <rect x="9" y="1" width="6" height="6" rx="1.5" fill={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'}/>
+        <rect x="1" y="9" width="6" height="6" rx="1.5" fill={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'}/>
+        <rect x="9" y="9" width="6" height="6" rx="1.5" fill={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'}/>
       </svg>
     ),
+    matchPaths: ['/dashboard', '/dashboard/clients'],
   },
   {
     href: '/dashboard/branding',
     label: 'Branding',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M8 12h8M12 8v8" />
+    icon: (active: boolean) => (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6.5" stroke={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'} strokeWidth="1.2"/>
+        <path d="M8 4v4l2.5 2.5" stroke={active ? '#12BFBF' : 'rgba(255,255,255,0.5)'} strokeWidth="1.2" strokeLinecap="round"/>
       </svg>
     ),
+    matchPaths: ['/dashboard/branding'],
   },
   {
-    href: '/dashboard/settings',
-    label: 'Settings',
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    href: '#',
+    label: 'Team',
+    icon: (_active: boolean) => (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6" cy="5" r="2.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
+        <circle cx="10" cy="5" r="2.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
+        <path d="M1 13c0-2.21 2.24-4 5-4s5 1.79 5 4" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+    matchPaths: [],
+  },
+  {
+    href: '#',
+    label: 'Billing',
+    icon: (_active: boolean) => (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="4" width="12" height="9" rx="1.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
+        <path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
+      </svg>
+    ),
+    matchPaths: [],
+  },
+]
+
+const supportItems = [
+  {
+    href: '#',
+    label: 'Help',
+    icon: (_active: boolean) => (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6.5" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2"/>
+        <path d="M8 9V8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2" stroke="rgba(255,255,255,0.5)" strokeWidth="1.2" strokeLinecap="round"/>
+        <circle cx="8" cy="11" r="0.75" fill="rgba(255,255,255,0.5)"/>
       </svg>
     ),
   },
 ]
 
-interface SidebarProps {
-  isOpen: boolean
-  onClose: () => void
-}
-
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar() {
   const pathname = usePathname()
 
+  function isActive(item: typeof navItems[0]) {
+    return item.matchPaths.some(p => pathname === p || pathname.startsWith(p + '/'))
+  }
+
   return (
-    <>
-      {/* Mobile overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-20 md:hidden"
-          style={{ background: 'rgba(0,0,0,0.5)' }}
-          onClick={onClose}
-        />
-      )}
+    <aside style={{
+      width: '220px',
+      flexShrink: 0,
+      background: '#080C0C',
+      display: 'flex',
+      flexDirection: 'column',
+      borderRight: '0.5px solid #1a3a3a',
+      position: 'relative',
+      overflow: 'hidden',
+      height: '100vh',
+    }}>
+      {/* Aura */}
+      <div style={{
+        position: 'absolute',
+        width: '220px', height: '200px',
+        background: 'radial-gradient(ellipse at center, rgba(10,123,123,0.2) 0%, transparent 70%)',
+        top: '-80px', left: '50%', transform: 'translateX(-50%)',
+        pointerEvents: 'none',
+      }} />
+      {/* Chrome */}
+      <div style={{
+        position: 'absolute',
+        top: 0, left: 0, right: 0, height: '1px',
+        background: 'linear-gradient(90deg, transparent, rgba(200,205,212,0.4) 50%, transparent)',
+      }} />
 
-      <aside
-        style={{
-          background: 'var(--brand-dark)',
-          width: '220px',
-          flexShrink: 0,
-        }}
-        className={[
-          'flex flex-col h-full',
-          // Mobile: fixed drawer
-          'fixed inset-y-0 left-0 z-30 transition-transform duration-200',
-          isOpen ? 'translate-x-0' : '-translate-x-full',
-          // Desktop: static
-          'md:static md:translate-x-0',
-        ].join(' ')}
-      >
-        {/* Logo */}
-        <div
-          style={{
-            padding: '1.5rem 1.25rem',
-            borderBottom: '0.5px solid rgba(18,191,191,0.15)',
-          }}
-        >
-          <span
-            style={{
-              fontFamily: 'var(--font-heading)',
-              color: 'var(--brand-accent)',
-              fontSize: '1.25rem',
-              letterSpacing: '0.12em',
-              fontWeight: 700,
-            }}
-          >
-            ENFLOW
-          </span>
-        </div>
+      {/* Logo */}
+      <div style={{
+        padding: '20px 18px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '10px',
+        borderBottom: '0.5px solid #1a3a3a',
+        position: 'relative',
+      }}>
+        <EnflowLogo />
+        <span style={{ fontFamily: "'Bricolage Grotesque', sans-serif", fontSize: '16px', fontWeight: 700, color: '#12BFBF', letterSpacing: '-0.02em' }}>
+          Enflow
+        </span>
+      </div>
 
-        {/* Nav */}
-        <nav className="flex-1 py-4 flex flex-col gap-1 px-3">
-          {navItems.map(item => {
-            const isActive = pathname.startsWith(item.href)
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={onClose}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.625rem',
-                  padding: '0.625rem 0.875rem',
-                  borderRadius: 'var(--radius-default)',
-                  color: isActive ? 'var(--brand-accent)' : 'rgba(232,240,239,0.65)',
-                  background: isActive ? 'rgba(18,191,191,0.1)' : 'transparent',
-                  textDecoration: 'none',
-                  fontSize: '0.9rem',
-                  fontWeight: isActive ? 500 : 400,
-                  transition: 'background var(--transition-fast), color var(--transition-fast)',
-                }}
-              >
-                {item.icon}
+      {/* Nav */}
+      <nav style={{ flex: 1, padding: '8px 10px' }}>
+        <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', padding: '16px 8px 6px' }}>
+          Workspace
+        </p>
+        {navItems.map(item => {
+          const active = isActive(item)
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                padding: '8px 10px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                marginBottom: '2px',
+                textDecoration: 'none',
+                background: active ? 'rgba(10,123,123,0.2)' : 'transparent',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.background = 'transparent' }}
+            >
+              <span style={{ width: '16px', height: '16px', flexShrink: 0, opacity: active ? 1 : 0.5, display: 'flex', alignItems: 'center' }}>
+                {item.icon(active)}
+              </span>
+              <span style={{ fontSize: '13px', color: active ? '#fff' : 'rgba(255,255,255,0.4)', fontWeight: active ? 500 : 400 }}>
                 {item.label}
-              </Link>
-            )
-          })}
-        </nav>
-      </aside>
-    </>
+              </span>
+            </Link>
+          )
+        })}
+
+        <p style={{ fontSize: '10px', fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.2)', padding: '16px 8px 6px', marginTop: '8px' }}>
+          Support
+        </p>
+        {supportItems.map(item => (
+          <Link
+            key={item.label}
+            href={item.href}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '8px 10px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              marginBottom: '2px',
+              textDecoration: 'none',
+              background: 'transparent',
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
+            <span style={{ width: '16px', height: '16px', flexShrink: 0, opacity: 0.5, display: 'flex', alignItems: 'center' }}>
+              {item.icon(false)}
+            </span>
+            <span style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)' }}>
+              {item.label}
+            </span>
+          </Link>
+        ))}
+      </nav>
+
+      {/* Footer / user */}
+      <div style={{ padding: '12px 10px', borderTop: '0.5px solid #1a3a3a' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px', borderRadius: '8px' }}>
+          <div style={{
+            width: '28px', height: '28px',
+            borderRadius: '50%',
+            background: 'rgba(10,123,123,0.3)',
+            border: '0.5px solid rgba(18,191,191,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: '11px', fontWeight: 500, color: '#12BFBF',
+            flexShrink: 0,
+          }}>
+            JD
+          </div>
+          <div>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: '#fff' }}>Jane Doe</div>
+            <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>Owner</div>
+          </div>
+        </div>
+      </div>
+    </aside>
   )
 }
