@@ -12,40 +12,68 @@ interface PageProps {
   params: Promise<{ id: string }>
 }
 
+const MOCK_CLIENT: Client = {
+  id: 'preview',
+  agency_id: 'preview-agency',
+  auth_user_id: null,
+  name: 'Acme Corp (Preview)',
+  contact_name: 'Jane Smith',
+  contact_email: 'jane@acmecorp.com',
+  phone: null,
+  invite_status: 'accepted',
+  services: 'SEO, PPC, Social Media',
+  retainer_value: 5000,
+  contract_start_date: '2024-01-01',
+  campaign_goals: 'Increase organic traffic by 40% in Q2',
+  internal_notes: null,
+  invited_at: null,
+  created_at: new Date().toISOString(),
+}
+
 export default async function ClientDetailPage({ params }: PageProps) {
   const { id } = await params
-  const supabase = await createClient()
 
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) notFound()
+  let client: Client = MOCK_CLIENT
+  let folders: DriveFolder[] = []
+  let embeds: ReportEmbed[] = []
 
-  // Scope check: ensure client belongs to the user's agency
-  const { data: agencyUser } = await supabase
-    .from('agency_users')
-    .select('agency_id')
-    .eq('auth_user_id', user.id)
-    .single()
+  try {
+    const supabase = await createClient()
 
-  if (!agencyUser) notFound()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      // UI preview — use mock data
+    } else {
+      const { data: agencyUser } = await supabase
+        .from('agency_users')
+        .select('agency_id')
+        .eq('auth_user_id', user.id)
+        .single()
 
-  const { data: clientData } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', id)
-    .eq('agency_id', agencyUser.agency_id)
-    .single()
+      if (!agencyUser) notFound()
 
-  if (!clientData) notFound()
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('id', id)
+        .eq('agency_id', agencyUser.agency_id)
+        .single()
 
-  const client = clientData as Client
+      if (!clientData) notFound()
 
-  const [{ data: foldersData }, { data: embedsData }] = await Promise.all([
-    supabase.from('drive_folders').select('*').eq('client_id', id).order('created_at'),
-    supabase.from('report_embeds').select('*').eq('client_id', id).order('updated_at', { ascending: false }),
-  ])
+      client = clientData as Client
 
-  const folders = (foldersData as DriveFolder[]) ?? []
-  const embeds = (embedsData as ReportEmbed[]) ?? []
+      const [{ data: foldersData }, { data: embedsData }] = await Promise.all([
+        supabase.from('drive_folders').select('*').eq('client_id', id).order('created_at'),
+        supabase.from('report_embeds').select('*').eq('client_id', id).order('updated_at', { ascending: false }),
+      ])
+
+      folders = (foldersData as DriveFolder[]) ?? []
+      embeds = (embedsData as ReportEmbed[]) ?? []
+    }
+  } catch {
+    // No Supabase connection — render with mock data for UI preview
+  }
 
   const isAccepted = client.invite_status === 'accepted'
 

@@ -1,37 +1,41 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ReportViewer } from '@/components/portal/ReportViewer'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { Client, ReportEmbed } from '@/types/database'
 
 export default async function PortalReportsPage() {
-  const supabase = await createClient()
+  let activeEmbed: ReportEmbed | undefined
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  try {
+    const supabase = await createClient()
 
-  const { data: clientData } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!clientData) redirect('/login')
+    if (user) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single()
 
-  const client = clientData as Client
+      if (clientData) {
+        const client = clientData as Client
 
-  const { data: embedsData } = await supabase
-    .from('report_embeds')
-    .select('*')
-    .eq('client_id', client.id)
-    .order('updated_at', { ascending: false })
+        const { data: embedsData } = await supabase
+          .from('report_embeds')
+          .select('*')
+          .eq('client_id', client.id)
+          .order('updated_at', { ascending: false })
 
-  const embeds = (embedsData as ReportEmbed[]) ?? []
-
-  // Use the most recent embed with a URL
-  const activeEmbed = embeds.find(e => e.embed_url)
+        const embeds = (embedsData as ReportEmbed[]) ?? []
+        activeEmbed = embeds.find(e => e.embed_url)
+      }
+    }
+  } catch {
+    // No Supabase connection — render empty state for UI preview
+  }
 
   return (
     <div>

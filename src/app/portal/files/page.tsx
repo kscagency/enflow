@@ -1,34 +1,40 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { FileBrowser } from '@/components/portal/FileBrowser'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { Client, DriveFolder } from '@/types/database'
 
 export default async function PortalFilesPage() {
-  const supabase = await createClient()
+  let folders: DriveFolder[] = []
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  try {
+    const supabase = await createClient()
 
-  const { data: clientData } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!clientData) redirect('/login')
+    if (user) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single()
 
-  const client = clientData as Client
+      if (clientData) {
+        const client = clientData as Client
 
-  const { data: foldersData } = await supabase
-    .from('drive_folders')
-    .select('*')
-    .eq('client_id', client.id)
-    .order('created_at')
+        const { data: foldersData } = await supabase
+          .from('drive_folders')
+          .select('*')
+          .eq('client_id', client.id)
+          .order('created_at')
 
-  const folders = (foldersData as DriveFolder[]) ?? []
+        folders = (foldersData as DriveFolder[]) ?? []
+      }
+    }
+  } catch {
+    // No Supabase connection — render empty state for UI preview
+  }
 
   return (
     <div>

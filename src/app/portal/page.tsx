@@ -1,36 +1,61 @@
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { ActivityFeed } from '@/components/portal/ActivityFeed'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { Client, Notification } from '@/types/database'
 
+const MOCK_CLIENT: Client = {
+  id: 'preview-client',
+  agency_id: 'preview-agency',
+  auth_user_id: null,
+  name: 'Acme Corp',
+  contact_name: 'Jane Smith',
+  contact_email: 'jane@acmecorp.com',
+  phone: null,
+  invite_status: 'accepted',
+  services: null,
+  retainer_value: null,
+  contract_start_date: null,
+  campaign_goals: null,
+  internal_notes: null,
+  invited_at: null,
+  created_at: new Date().toISOString(),
+}
+
 export default async function PortalPage() {
-  const supabase = await createClient()
+  let client: Client = MOCK_CLIENT
+  let notifications: Notification[] = []
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  try {
+    const supabase = await createClient()
 
-  const { data: clientData } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!clientData) redirect('/login')
+    if (user) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single()
 
-  const client = clientData as Client
+      if (clientData) {
+        client = clientData as Client
 
-  const { data: notificationsData } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('client_id', client.id)
-    .order('created_at', { ascending: false })
-    .limit(10)
+        const { data: notificationsData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('client_id', client.id)
+          .order('created_at', { ascending: false })
+          .limit(10)
 
-  const notifications = (notificationsData as Notification[]) ?? []
+        notifications = (notificationsData as Notification[]) ?? []
+      }
+    }
+  } catch {
+    // No Supabase connection — render with mock data for UI preview
+  }
 
   return (
     <div>

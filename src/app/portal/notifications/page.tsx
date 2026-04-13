@@ -1,34 +1,42 @@
-import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { NotificationList } from '@/components/portal/NotificationList'
 import { EmptyState } from '@/components/ui/EmptyState'
 import type { Client, Notification } from '@/types/database'
 
 export default async function PortalNotificationsPage() {
-  const supabase = await createClient()
+  let notifications: Notification[] = []
+  let clientId = 'preview-client'
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
+  try {
+    const supabase = await createClient()
 
-  const { data: clientData } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('auth_user_id', user.id)
-    .single()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (!clientData) redirect('/login')
+    if (user) {
+      const { data: clientData } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('auth_user_id', user.id)
+        .single()
 
-  const client = clientData as Client
+      if (clientData) {
+        const client = clientData as Client
+        clientId = client.id
 
-  const { data: notificationsData } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('client_id', client.id)
-    .order('created_at', { ascending: false })
+        const { data: notificationsData } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('client_id', client.id)
+          .order('created_at', { ascending: false })
 
-  const notifications = (notificationsData as Notification[]) ?? []
+        notifications = (notificationsData as Notification[]) ?? []
+      }
+    }
+  } catch {
+    // No Supabase connection — render empty state for UI preview
+  }
 
   return (
     <div>
@@ -65,7 +73,7 @@ export default async function PortalNotificationsPage() {
           }
         />
       ) : (
-        <NotificationList notifications={notifications} clientId={client.id} />
+        <NotificationList notifications={notifications} clientId={clientId} />
       )}
     </div>
   )
